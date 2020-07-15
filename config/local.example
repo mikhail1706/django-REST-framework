@@ -1,0 +1,65 @@
+DATABASES = {
+   'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'python-test-app',
+        'HOST': 'mysql',
+        'PORT': '3306',
+        'USER': 'root',
+        'PASSWORD': 'dev',
+        'OPTIONS': {
+           'sql_mode': 'traditional',
+           'init_command': 'SET innodb_strict_mode=1',
+           'charset': 'utf8mb4',
+        },
+        'TEST': {
+            'CHARSET': 'utf8',
+            'COLLATION': 'utf8_general_ci',
+        }
+   },
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient"
+        },
+        "KEY_PREFIX": "local"
+    }
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+            "prefix": 'local'
+        },
+    },
+}
+
+
+SLACK_API_TOKEN = ''
+CHANNEL_ID = ''
+
+
+SERVER_URL = ''
+
+SUPPORT_EMAIL = []
+
+EMAIL_HOST = ''
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = ''
+EMAIL_USE_SSL = ''
+
+IP_STACK_ACCESS_KEY = ''
+DIALOG_FLOW_ID = ''
+DIALOG_FLOW_FILE_NAME = ''
+
+IS_TEMP = ''
+
+DEBUG = ''
+
+SERVER_NAME =''

@@ -1,0 +1,12 @@
+[Unit]
+Description= gunicorn deamon for sp_temp
+Requires=sp_temp.socket
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/var/www/vhosts/sp.forextester.com/projects/sp_temp/sp
+ExecStart=/var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/venv/bin/gunicorn --bind unix:/var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/sp_temp.sock --reload support_system.wsgi:application /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/logs/gunicorn.log --error-logfile /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/logs/gunicorn.log --access-logfile /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/logs/gunicorn.log --timeout 120
+[Install]
+WantedBy=multi-user.target

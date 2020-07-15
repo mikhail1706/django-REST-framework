@@ -1,0 +1,62 @@
+upstream sp_temp_server_ssl {
+    server unix: /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/sp_temp.sock;
+}
+
+upstream app_daphne_sp_temp {
+    server localhost: 8783;
+}
+
+server {
+    listen      	92 ssl http2;
+    listen [::]:92 ssl http2;
+    server_name 	sp.forextester.com;
+
+    ssl_certificate             /opt/psa/var/certificates/scfLqsKWz;
+    ssl_certificate_key         /opt/psa/var/certificates/scfLqsKWz;
+    ssl_client_certificate      /opt/psa/var/certificates/scfUXIkFM;
+
+    location /media/ {
+        root /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/;
+    }
+
+    location /static/ {
+        root /var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/;
+    }
+
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        add_header P3P 'CP = "ALL DSP COR PSAa PSDa OUR NOR ONL UNI COM NAV"';
+        proxy_redirect off;
+        proxy_pass                      	http://sp_temp_server_ssl;
+    }
+
+    location /ws/ {
+        proxy_pass				http://app_daphne_sp_temp;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $server_name;
+    }
+
+    location /wss/ {
+        proxy_pass http://app_daphne_sp_temp;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host $server_name;
+
+    }
+
+}

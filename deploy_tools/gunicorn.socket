@@ -1,0 +1,6 @@
+[Unit]
+Description=gunicorn socket
+[Socket]
+ListenStream=/var/www/vhosts/sp.forextester.com/projects/sp_temp/sp/sp_temp.sock
+[Install]
+WantedBy=sockets.target

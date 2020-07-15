@@ -1,0 +1,121 @@
+image: ubuntu:18.04
+
+services:
+  - mysql:5.7
+  - redis:latest
+
+variables:
+  MYSQL_DATABASE: python-test-app
+  MYSQL_ROOT_PASSWORD: dev
+  DB_HOST: mysql
+  DB_USERNAME: root
+  HOST: redis
+
+stages:
+  - build
+  - unit_tests
+  - deploy
+
+django_build:
+  image: objectisliper/python-mysql:latest
+  stage: build
+  only:
+    - develop
+    - staging
+    - master
+  script:
+    - cp project_folder/local.example project_folder/local.py
+    - mkdir logs
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip3 install --upgrade pip
+    - pip3 install -r requirements.txt
+    - python3 manage.py makemigrations && python3 manage.py migrate
+    - echo build successful!*******
+
+project_tests:
+  image: objectisliper/python-mysql:latest
+  stage: unit_tests
+  only:
+    - develop
+    - staging
+    - master
+  script:
+    - cp project_folder/local.example project_folder/local.py
+    - mkdir logs
+    - python3 -m venv venv
+    - source venv/bin/activate
+    - pip3 install --upgrade pip
+    - pip3 install -r requirements.txt
+    - python3 manage.py makemigrations && python3 manage.py migrate
+    - coverage run --source='.' --omit='./venv/*' manage.py test
+    - coverage report
+
+
+deploy_develop:
+  stage: deploy
+  environment:
+    name: develop
+    url: https://project.com
+  only:
+    - develop
+  script:
+    - ssh $SSH_USER@$SSH_SERVER -p $SSH_PORT 'cd /path/to/your/workdir/ && git stash && git pull origin develop && supervisorctl restart sp_dev_asgi:* && source /path/to/your/workdir/venv/bin/activate && pip install -r requirements.txt && supervisorctl restart project_beat && supervisorctl restart project_worker && python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput '
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'eval $(ssh-agent -s)'
+    - 'ssh-add <(echo "$SSH_PRIVATE_KEY")'
+    - 'mkdir -p ~/.ssh'
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - 'echo "Prebuild finished"'
+
+deploy_staging:
+  stage: deploy
+  environment:
+    name: staging
+    url: https://project.com
+  only:
+    - staging
+  script:
+   - ssh $SSH_USER@$SSH_SERVER -p $SSH_PORT 'cd /path/to/your/workdir/ && git stash && git pull origin staging && supervisorctl restart sp_dev_asgi:* && source /path/to/your/workdir/venv/bin/activate && pip install -r requirements.txt && supervisorctl restart project_beat && supervisorctl restart project_worker && python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput '
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'eval $(ssh-agent -s)'
+    - 'ssh-add <(echo "$SSH_PRIVATE_KEY")'
+    - 'mkdir -p ~/.ssh'
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - 'echo "Prebuild finished"'
+
+deploy_master_bh:
+  stage: deploy
+  environment:
+    name: master
+    url: https://project.com
+  only:
+    - master
+  script:
+    - - ssh $SSH_USER@$SSH_SERVER -p $SSH_PORT 'cd /path/to/your/workdir/ && git stash && git pull origin master && supervisorctl restart sp_dev_asgi:* && source /path/to/your/workdir/venv/bin/activate && pip install -r requirements.txt && supervisorctl restart project_beat && supervisorctl restart project_worker && python manage.py makemigrations --noinput && python manage.py migrate --noinput && python manage.py collectstatic --noinput '
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'eval $(ssh-agent -s)'
+    - 'ssh-add <(echo "$SSH_PRIVATE_KEY")'
+    - 'mkdir -p ~/.ssh'
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - 'echo "Prebuild finished"'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
